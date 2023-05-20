@@ -2,31 +2,21 @@ import { galleryItems } from './gallery-items.js';
 
 const galleryList = document.querySelector('.gallery');
 
-// Создание и рендеринг разметки
 const createGalleryItem = ({ preview, original, description }) => {
-  const galleryItem = document.createElement('li');
-  galleryItem.classList.add('gallery__item');
-
-  const link = document.createElement('a');
-  link.classList.add('gallery__link');
-  link.href = original;
-
-  const image = document.createElement('img');
-  image.classList.add('gallery__image');
-  image.src = preview;
-  image.setAttribute('data-source', original);
-  image.alt = description;
-
-  link.appendChild(image);
-  galleryItem.appendChild(link);
+  const galleryItem = `
+    <li class="gallery__item">
+      <a class="gallery__link" href="${original}">
+        <img class="gallery__image" src="${preview}" data-source="${original}" alt="${description}" />
+      </a>
+    </li>
+  `;
 
   return galleryItem;
 };
 
-const galleryMarkup = galleryItems.map(createGalleryItem);
-galleryList.append(...galleryMarkup);
+const galleryMarkup = galleryItems.map(createGalleryItem).join('');
+galleryList.innerHTML = galleryMarkup;
 
-// Реализация делегирования и получение URL большого изображения
 galleryList.addEventListener('click', handleGalleryItemClick);
 
 function handleGalleryItemClick(event) {
@@ -41,12 +31,14 @@ function handleGalleryItemClick(event) {
   openModal(source);
 }
 
-// Открытие модального окна по клику на элементе галереи
 function openModal(source) {
-  const instance = basicLightbox.create(`<img src="${source}" width="800" height="600">`);
+  const instance = basicLightbox.create(`<img src="${source}" width="800" height="600">`, {
+    onClose: () => {
+      window.removeEventListener('keydown', handleKeyPress);
+    },
+  });
   instance.show();
 
-  // Закрытие модального окна при нажатии на кнопку Esc
   const handleKeyPress = (event) => {
     if (event.code === 'Escape') {
       instance.close();
